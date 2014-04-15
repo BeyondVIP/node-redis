@@ -4,8 +4,6 @@ var WebSocketServer = require('./node_modules/websocket/lib/websocket').server;
 var redis = require('redis');
 var globalRedisClient = redis.createClient();
 
-console.log("test app loading..."); // log
-
 function redisSubcription(user_info) {
   this.redis_client = redis.createClient();
   this.redis_client.current_subscription = this;
@@ -46,8 +44,6 @@ wsServer.on('request', function(request) {
   auth_token = request.resourceURL.query.auth_token;
 
   globalRedisClient.hgetall('bvip:auth_token:' + auth_token, function(err, result) {
-    console.log(result); // log
-
     if(result) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
@@ -56,7 +52,7 @@ wsServer.on('request', function(request) {
       connection.subscription = new redisSubcription(result);
       connection.subscription.connection = connection;
 
-      console.log('user_id: '+result.user_id+' company_id: '+result.company_id+' device_id: '+result.device_id);
+      console.log('user_id: '+result.user_id+'; company_id: '+result.company_id+'; device_id: '+result.device_id);
 
       connection.on('close', function() {
           console.log(connection.remoteAddress + " disconnected"); // log
@@ -64,8 +60,8 @@ wsServer.on('request', function(request) {
           if (index !== -1) { connections.splice(index, 1); }
       });
     }
+    else {request.reject();}
   });
 });
-
 
 console.log("test app ready"); // log
