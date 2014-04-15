@@ -3,7 +3,7 @@ var http = require('http');
 var WebSocketServer = require('./node_modules/websocket/lib/websocket').server;
 var redis = require('redis');
 
-var redis_config = require('./redis_config')[process.argv[2] || 'development'];
+var redis_config = require('./redis_config')[process.env.NODE_ENVIRONMENT || 'development'];
 var globalRedisClient = redis.createClient(redis_config.port, redis_config.host);
 
 function redisSubcription(user_info) {
