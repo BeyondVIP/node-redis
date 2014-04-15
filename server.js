@@ -2,10 +2,12 @@
 var http = require('http');
 var WebSocketServer = require('./node_modules/websocket/lib/websocket').server;
 var redis = require('redis');
-var globalRedisClient = redis.createClient();
+
+var redis_config = require('./redis_config')[process.argv[2] || 'development'];
+var globalRedisClient = redis.createClient(redis_config.port, redis_config.host);
 
 function redisSubcription(user_info) {
-  this.redis_client = redis.createClient();
+  this.redis_client = redis.createClient(redis_config.port, redis_config.host);
   this.redis_client.current_subscription = this;
   this.redis_client.on("message", function(channel, message) {
     if(typeof this.current_subscription.connection !== 'undefined' ) {
@@ -13,7 +15,6 @@ function redisSubcription(user_info) {
       if(/disconnect/.test(channel))
       {
         console.log("user "+user_info.user_id+' disconnected'); // log
-        this.end();
         this.current_subscription.connection.close();
       }
       else { this.current_subscription.connection.sendUTF(message); }
@@ -56,6 +57,7 @@ wsServer.on('request', function(request) {
 
       connection.on('close', function() {
           console.log(connection.remoteAddress + " disconnected"); // log
+          connection.subscription.redis_client.end();
           var index = connections.indexOf(connection);
           if (index !== -1) { connections.splice(index, 1); }
       });
