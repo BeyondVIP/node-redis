@@ -6,17 +6,20 @@ var redis = require('redis');
 var redis_config = require('./redis_config')[process.env.NODE_ENVIRONMENT || 'development'];
 var globalRedisClient = redis.createClient(redis_config.port, redis_config.host);
 
+function prettyLog(title, content) {
+  console.log('['+Date()+']',
+    '['+title.toUpperCase()+']',
+    content
+  )
+}
+
 function redisSubcription(user_info) {
   this.redis_client = redis.createClient(redis_config.port, redis_config.host);
   this.redis_client.current_subscription = this;
   this.redis_client.on("message", function(channel, message) {
     if(typeof this.current_subscription.connection !== 'undefined' ) {
-      console.log("user "+user_info.user_id+' received ( '+message+' ) from '+channel); // log
-      if(/disconnect/.test(channel))
-      {
-        console.log("user "+user_info.user_id+' disconnected'); // log
-        this.current_subscription.connection.close();
-      }
+      prettyLog('to user '+user_info.user_id, "channel: "+channel+'; message: '+message.substring(0,100));
+      if(/disconnect/.test(channel)) { this.current_subscription.connection.close(); }
       else { this.current_subscription.connection.sendUTF(message); }
     }
     else { this.end(); }
@@ -48,15 +51,15 @@ wsServer.on('request', function(request) {
     if(result) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
-      console.log(connection.remoteAddress + " connected - Protocol Version " + connection.webSocketVersion); // log
+      prettyLog('connected', 'address: '+connection.remoteAddress+'; version: '+connection.webSocketVersion); 
 
       connection.subscription = new redisSubcription(result);
       connection.subscription.connection = connection;
 
-      console.log('user_id: '+result.user_id+'; company_id: '+result.company_id+'; device_id: '+result.device_id);
+      prettyLog('user found', 'id: '+result.user_id+'; company_id: '+result.company_id+'; device_id: '+result.device_id); 
 
       connection.on('close', function() {
-          console.log(connection.remoteAddress + " disconnected"); // log
+          prettyLog('disconnected', 'address: '+connection.remoteAddress); 
           connection.subscription.redis_client.end();
           var index = connections.indexOf(connection);
           if (index !== -1) { connections.splice(index, 1); }
@@ -66,4 +69,4 @@ wsServer.on('request', function(request) {
   });
 });
 
-console.log("test app ready"); // log
+console.log("test app ready"); 
