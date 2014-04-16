@@ -35,7 +35,7 @@ function redisSubcription(user_info) {
 app = http.createServer(function (request, response) {
   response.writeHead(200, {'Content-Type': 'text/plain'});
   response.end('Hello World\n');
-}).listen(8814);
+}).listen(process.env.PORT);
 
 var wsServer = new WebSocketServer({
     httpServer: app,
