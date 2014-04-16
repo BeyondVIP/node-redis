@@ -1,0 +1,1 @@
+nf export -o /etc/init/ -a node-redis -l ./log/
