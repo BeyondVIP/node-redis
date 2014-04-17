@@ -52,10 +52,10 @@ wsServer.on('request', function(request) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
 
-      request_info = {'address': request.httpRequest.headers['x-real-ip'],
+      request_info = JSON.stringify({'address': request.httpRequest.headers['x-real-ip'],
         'user_agent': request.httpRequest.headers['x-real-user-agent'],
         'protocol_version': connection.webSocketVersion
-      }
+      });
 
       prettyLog('connected', request_info); 
 
@@ -76,4 +76,4 @@ wsServer.on('request', function(request) {
   });
 });
 
-console.log("test app ready"); 
+console.log("app ready"); 
