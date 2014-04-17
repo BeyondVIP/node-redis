@@ -51,15 +51,22 @@ wsServer.on('request', function(request) {
     if(result) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
-      prettyLog('connected', 'address: '+request.httpRequest.headers['x-real-ip']+'; version: '+connection.webSocketVersion+'; user_agent: '+request.httpRequest.headers['x-real-user-agent']); 
+
+      request_info = {'address': request.httpRequest.headers['x-real-ip'],
+        'user_agent': request.httpRequest.headers['x-real-user-agent'],
+        'protocol_version': connection.webSocketVersion
+      }
+
+      prettyLog('connected', request_info); 
 
       connection.subscription = new redisSubcription(result);
       connection.subscription.connection = connection;
+      connection.request_info = request_info;
 
       prettyLog('user found', 'id: '+result.user_id+'; company_id: '+result.company_id+'; device_id: '+result.device_id); 
 
       connection.on('close', function() {
-          prettyLog('disconnected', 'address: '+connection.socket.remoteAddress); 
+          prettyLog('disconnected', this.request_info); 
           connection.subscription.redis_client.end();
           var index = connections.indexOf(connection);
           if (index !== -1) { connections.splice(index, 1); }
