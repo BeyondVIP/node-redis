@@ -14,7 +14,8 @@
       $(function() {
         if (typeof Source != 'undefined') { Source.close(); } 
 
-        protocol = window.location.protocol == 'https' ? 'wss' : 'ws';
+
+        protocol = /https/.test(window.location.protocol) ? 'wss' : 'ws';
         connection_url = protocol+'://'+window.location.host+'/stream?auth_token='+getParameterByName('auth_token');
         console.log('connection_url: ', connection_url);
 
