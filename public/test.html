@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
+    <script type="text/javascript">
+      function getParameterByName(name) {
+        name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+        var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+            results = regex.exec(location.search);
+        return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+      }
+
+      var Source;
+
+      $(function() {
+        if (typeof Source != 'undefined') { Source.close(); } 
+
+        protocol = window.location.protocol == 'https' ? 'wss' : 'ws';
+        connection_url = protocol+'://'+window.location.host+'/stream?auth_token='+getParameterByName('auth_token');
+        console.log('connection_url: ', connection_url);
+
+        Source = new WebSocket(connection_url);
+
+        Source.onmessage = function(e) {
+          console.log('message', e);
+          var newElement = document.createElement("li");
+          list = $('#event-list')[0];
+          $(newElement).html(e.data);
+          $(list).append(newElement);
+
+          if($("#event-list li").length > 10) {
+            $("#event-list li:first").remove();
+          }
+        }
+
+        Source.onerror = function() {
+          console.log("error!");
+        }
+
+        Source.onclose = function(event) {
+          console.log("closed!");
+        };
+
+        Source.onopen = function(event) {
+          console.log("connected!");
+        };
+      });
+    </script>>
+  </head>
+  <body>
+    <div id="event-list"></div>
+  </body>
+</html>
