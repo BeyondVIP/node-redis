@@ -51,8 +51,7 @@ wsServer.on('request', function(request) {
     if(result) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
-      prettyLog('connected_headers', request.httpRequest.headers['x-real-ip']);
-      prettyLog('connected', 'address: '+connection.socket.remoteAddress+'; version: '+connection.webSocketVersion); 
+      prettyLog('connected', 'address: '+request.httpRequest.headers['x-real-ip']+'; version: '+connection.webSocketVersion+'; user_agent: '+request.httpRequest.headers['x-real-user-agent']); 
 
       connection.subscription = new redisSubcription(result);
       connection.subscription.connection = connection;
