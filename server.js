@@ -71,9 +71,18 @@ wsServer.on('request', function(request) {
           var index = connections.indexOf(connection);
           if (index !== -1) { connections.splice(index, 1); }
       });
+
+      connection.on('error', function() {
+        prettyLog('connection error', this.request_info); 
+      })
     }
     else {request.reject();}
   });
 });
+
+wsServer.on('close', function(webSocketConnection, closeReason, description){
+  prettyLog('connection closed', webSocketConnection.request_info);
+  prettyLog('connection closed reason', closeReason, description);
+})
 
 console.log("app ready"); 
