@@ -16,6 +16,11 @@ function prettyLog(title, content) {
 function redisSubcription(user_info) {
   this.redis_client = redis.createClient(redis_config.port, redis_config.host);
   this.redis_client.current_subscription = this;
+
+  this.redis_client.subscribe("bvip:general",
+    "bvip:disconnect:" + user_info.user_id,
+    "bvip:disconnect_device:" + user_info.device_id);
+
   this.redis_client.on("message", function(channel, message) {
     if(typeof this.current_subscription.connection !== 'undefined' ) {
       prettyLog('to user '+user_info.user_id, "channel: "+channel+'; message: '+message.substring(0,100));
@@ -25,11 +30,19 @@ function redisSubcription(user_info) {
     else { this.end(); }
   });
 
-  this.redis_client.subscribe("bvip:general_changes",  
-    "bvip:user_changes:" + user_info.user_id,
-    "bvip:company_changes:" + user_info.company_id,
-    "bvip:disconnect:" + user_info.user_id,
-    "bvip:disconnect_device:" + user_info.device_id);
+  this.redis_client.psubscribe("bvip:global_changes:*",
+    "bvip:user_changes:" + user_info.user_id + ":*",
+    "bvip:company_changes:" + user_info.company_id + ":*");
+
+  this.redis_client.on("pmessage", function(pattern, channel, message){
+    if(typeof this.current_subscription.connection !== 'undefined' ) {
+      auth_token = /[^:]+$/.exec(channel)
+      prettyLog('to user '+user_info.user_id,
+        "author_token: " + auth_token + "; pattern: " + pattern + "; channel: "+channel+'; message: '+message.substring(0,100));
+      if(auth_token != this.current_subscription.auth_token) { this.current_subscription.connection.sendUTF(message); }
+    }
+    else { this.end(); }
+  });
 }
 
 app = http.createServer(function (request, response) {
@@ -61,6 +74,7 @@ wsServer.on('request', function(request) {
 
       connection.subscription = new redisSubcription(result);
       connection.subscription.connection = connection;
+      connection.subscription.auth_token = auth_token;
       connection.request_info = request_info;
 
       prettyLog('user found', 'id: '+result.user_id+'; company_id: '+result.company_id+'; device_id: '+result.device_id); 
