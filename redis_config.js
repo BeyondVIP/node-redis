@@ -9,6 +9,6 @@ module.exports = {
   },
   'production': {
     'port': null,
-    'host': '192.168.1.29'
+    'host': '192.168.1.22'
   }
 }
