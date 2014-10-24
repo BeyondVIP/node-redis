@@ -8,7 +8,7 @@ module.exports = {
     'host': null
   },
   'production': {
-    'port': null,
-    'host': '192.168.1.22'
+    'port': '6379',
+    'host': 'bvip-redis.adwtly.0001.use1.cache.amazonaws.com'
   }
 }
