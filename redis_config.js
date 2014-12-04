@@ -4,8 +4,8 @@ module.exports = {
     'host': null
   },
   'staging': {
-    'port': null,
-    'host': null
+    'port': '6379',
+    'host': 'bvip-stage-redis-001.adwtly.0001.use1.cache.amazonaws.com'
   },
   'production': {
     'port': '6379',
