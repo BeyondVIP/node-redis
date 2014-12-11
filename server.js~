@@ -17,9 +17,9 @@ function redisSubcription(user_info) {
   this.redis_client = redis.createClient(redis_config.port, redis_config.host);
   this.redis_client.current_subscription = this;
 
-  this.redis_client.subscribe("bvip_prod:general",
-    "bvip_prod:disconnect:" + user_info.user_id,
-    "bvip_prod:disconnect_device:" + user_info.device_id);
+  this.redis_client.subscribe("bvip:general",
+    "bvip:disconnect:" + user_info.user_id,
+    "bvip:disconnect_device:" + user_info.device_id);
 
   this.redis_client.on("message", function(channel, message) {
     if(typeof this.current_subscription.connection !== 'undefined' ) {
@@ -30,9 +30,9 @@ function redisSubcription(user_info) {
     else { this.end(); }
   });
 
-  this.redis_client.psubscribe("bvip_prod:global_changes:*",
-    "bvip_prod:user_changes:" + user_info.user_id + ":*",
-    "bvip_prod:company_changes:" + user_info.company_id + ":*");
+  this.redis_client.psubscribe("bvip:global_changes:*",
+    "bvip:user_changes:" + user_info.user_id + ":*",
+    "bvip:company_changes:" + user_info.company_id + ":*");
 
   this.redis_client.on("pmessage", function(pattern, channel, message){
     if(typeof this.current_subscription.connection !== 'undefined' ) {
@@ -60,7 +60,7 @@ var connections = [];
 wsServer.on('request', function(request) {
   auth_token = request.resourceURL.query.auth_token;
 
-  globalRedisClient.hgetall('bvip_prod:auth_token:' + auth_token, function(err, result) {
+  globalRedisClient.hgetall('bvip:auth_token:' + auth_token, function(err, result) {
     if(result) {
       var connection = request.accept(null, request.origin);
       connections.push(connection);
